@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#090a09">
+  <meta name="description" content="EPISTASSI — The Thirteen Cut: a first-person psychological horror investigation in the Po Valley.">
+  <title>EPISTASSI — The Listening / The Thirteen Cut</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="world"></canvas>
+  <div id="post-noise" aria-hidden="true"></div>
+  <div id="scanlines" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+
+  <div id="hud">
+    <header class="topbar">
+      <div class="brand">EPISTASSI <span>///</span> THE LISTENING</div>
+      <div class="top-right">
+        <div class="readout" id="location">FOG ROAD</div>
+        <div class="readout recording"><i></i> REC <span id="tape-counter">00:00:00</span></div>
+        <button class="icon-button" id="journal-button" title="Journal (Tab)">JOURNAL <b>[TAB]</b></button>
+        <button class="icon-button" id="sound-button" title="Toggle sound">SOUND <b>[M]</b></button>
+        <button class="icon-button" id="settings-button" title="Settings (P)">SETTINGS <b>[P]</b></button>
+      </div>
+    </header>
+
+    <div class="objective" id="objective">
+      <span class="micro-label">OBJECTIVE</span>
+      <div id="objective-text">Find the farmhouse. Look for the place where the animals are hung.</div>
+      <div class="progress-track"><div id="progress-fill"></div></div>
+      <div class="progress-caption"><span id="evidence-count">0 / 8 CLUES</span><span id="clock">03:17</span></div>
+    </div>
+
+    <div class="center-mark" id="center-mark"><span></span><i></i></div>
+    <div class="prompt" id="prompt">[ E ] EXAMINE</div>
+
+    <div class="subtitle-wrap" id="subtitle-wrap">
+      <div class="speaker" id="speaker">INES</div>
+      <div class="subtitle" id="subtitle"></div>
+      <div class="dialogue-options" id="dialogue-options"></div>
+      <div class="subtitle-help">[1] / [2] ANSWER · [ESC] CLOSE</div>
+    </div>
+
+    <div class="bottom-left">
+      <div class="tool-indicator"><span class="tool-icon">◉</span><span>FLASHLIGHT <b id="torch-state">ON</b> <em>[F]</em></span></div>
+      <div class="tool-indicator"><span class="tool-icon">▤</span><span>INVENTORY <b id="inventory-count">0</b> <em>[TAB]</em></span></div>
+    </div>
+
+    <div class="bottom-right">
+      <div class="signal-label">SIGNAL <span id="signal-value">81%</span> · NERVES <span id="fear-value">12%</span></div>
+      <div class="signal-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="coordinates" id="coords">45° 02' N — 10° 41' E</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <section id="start-screen" class="screen active">
+    <div class="screen-grain"></div>
+    <div class="start-content">
+      <div class="eyebrow">SOUND ARCHIVE / DOCUMENT 14-B</div>
+      <h1>EPISTASSI</h1>
+      <div class="subtitle-title">THE WHITE WAS NOT HEARD</div>
+      <div class="rule"></div>
+      <p class="start-copy">A piano tuner has been called to a farmhouse in the Po Valley.<br>Fog has closed the roads. Thirteen people are waiting to be emptied.</p>
+      <p class="start-quote">“I can hear when something stops being wrong.”</p>
+      <div class="difficulty-pick" id="difficulty-pick" role="radiogroup" aria-label="Difficulty"></div>
+      <div class="difficulty-text" id="difficulty-text"></div>
+      <button id="start-button" class="main-button">ENTER THE FOG <span>→</span></button>
+      <button id="start-settings" class="text-button">SOUND &amp; CONTROLS</button>
+      <div class="controls-note">W A S D — MOVE &nbsp; / &nbsp; MOUSE — LOOK (CLICK AND DRAG IF NEEDED) &nbsp; / &nbsp; E — INTERACT<br>F — FLASHLIGHT &nbsp; / &nbsp; SHIFT — RUN &nbsp; / &nbsp; TAB — JOURNAL &nbsp; / &nbsp; M — AUDIO<br>HOLD Q — HOLD YOUR BREATH &nbsp; / &nbsp; P — SETTINGS &nbsp; / &nbsp; SPACE — SKIP A CUTSCENE</div>
+      <div class="start-footer">A FICTIONAL PLACE · A RECORDING THAT WAS NEVER MADE · 1977 / 03:17</div>
+    </div>
+  </section>
+
+  <section id="journal" class="screen panel-screen">
+    <div class="panel-frame">
+      <div class="panel-head"><div><span class="eyebrow">RECOVERED DOCUMENTS</span><h2>The Journal</h2></div><button class="close-button" id="journal-close">CLOSE [TAB]</button></div>
+      <div class="journal-grid">
+        <div class="journal-list" id="journal-list"><div class="empty-note">No clues recorded.<br><br>The house is not visible yet.</div></div>
+        <div class="journal-detail" id="journal-detail"><div class="detail-stamp">EPISTASSI / ARCHIVE 14-B</div><h3>An Inventory of Absence</h3><p>Things are found out of order. Do not look for an explanation: record what remains.</p><div class="handwritten">I engrave my memoirs<br>with a sunshine<br>that isn't there.</div><div class="detail-foot">UNDATED PAGE · BLUE-BLACK INK</div></div>
+      </div>
+      <div class="panel-foot"><span id="journal-total">0 ITEMS CATALOGUED</span><span>THIS IS NOT A MAP</span></div>
+    </div>
+  </section>
+
+  <section id="settings" class="screen panel-screen">
+    <div class="panel-frame settings-frame">
+      <div class="panel-head"><div><span class="eyebrow">THE MACHINE</span><h2>Settings</h2></div><button class="close-button" id="settings-close">CLOSE [P]</button></div>
+      <div class="settings-grid">
+        <label>MASTER VOLUME <output id="out-master"></output><input type="range" id="set-master" min="0" max="1" step="0.01"></label>
+        <label>MUSIC VOLUME <output id="out-music"></output><input type="range" id="set-music" min="0" max="1" step="0.01"></label>
+        <label>EFFECTS &amp; VOICES <output id="out-sfx"></output><input type="range" id="set-sfx" min="0" max="1.5" step="0.01"></label>
+        <label>MOUSE SENSITIVITY <output id="out-sens"></output><input type="range" id="set-sens" min="0.3" max="2.5" step="0.05"></label>
+        <div class="settings-note" id="settings-difficulty"></div>
+      </div>
+      <div class="panel-foot"><span>SETTINGS ARE KEPT IN THIS BROWSER</span><span>DIFFICULTY IS CHOSEN BEFORE ENTERING THE FOG</span></div>
+    </div>
+  </section>
+
+  <section id="ending-screen" class="screen">
+    <div class="ending-content">
+      <div class="eyebrow">RECORDING CONCLUDED / TAPE 14</div>
+      <h2 id="ending-title">The White Was Not Heard.</h2>
+      <p id="ending-copy">The machine is turning. The platter is empty.</p>
+      <div class="ending-rule"></div>
+      <p class="ending-small" id="ending-small">CHOOSE THE FATE OF THE RECORDING</p>
+      <div id="ending-choices" class="ending-choices">
+        <button class="ending-choice" id="ending-fill"><b>I</b><span>OFFER YOUR NAME</span><small>Let the room fill you.</small></button>
+        <button class="ending-choice" id="ending-expose"><b>II</b><span>OPEN THE WINDOWS</span><small>Give the place its air back.</small></button>
+        <button class="ending-choice" id="ending-preserve"><b>III</b><span>TOUCH NOTHING</span><small>Preserve the recording.</small></button>
+        <button class="ending-choice" id="ending-testimony" style="display:none"><b>IV</b><span>READ THE NAMES</span><small>Speak the thirteen names aloud.</small></button>
+      </div>
+      <div id="ending-result" class="ending-result"><div class="ending-last">EPISTASSI</div><button id="return-button" class="main-button">RETURN TO THE THRESHOLD <span>↺</span></button></div>
+    </div>
+  </section>
+
+  <section id="death-screen" class="screen">
+    <div class="ending-content death-content"><div class="eyebrow">DOCUMENT INTERRUPTED / TAPE 14-B</div><h2 id="death-title">The room has kept you.</h2><p id="death-copy">Someone kept counting after you stopped.</p><div class="ending-rule"></div><div class="ending-small">RECORDING UNRECOVERABLE</div><button id="retry-button" class="main-button">RESTART FROM THE BEGINNING <span>↺</span></button></div>
+  </section>
+  <div id="event-flash" aria-hidden="true"></div>
+  <div id="chapter-card" aria-hidden="true"></div>
+  <div id="station-card" aria-hidden="true"><small></small><b></b><em></em></div>
+  <div id="skip-hint" aria-hidden="true">[ SPACE ] SKIP</div>
+  <div id="intro-dark" style="position:fixed;inset:0;background:#000;opacity:1;transition:opacity .4s linear;z-index:9;pointer-events:none" aria-hidden="true"></div>
+  <div id="finale-white" style="position:fixed;inset:0;background:#fff;opacity:0;transition:opacity .4s linear;z-index:60;pointer-events:none" aria-hidden="true"></div>
+  <div id="fatal" class="fatal hidden"></div>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+  <script>
+    window.addEventListener('error', function (event) {
+      if (event.target && event.target.tagName === 'SCRIPT' && event.target.type === 'module') {
+        const fatal = document.getElementById('fatal');
+        fatal.textContent = `3D ENGINE FAILED TO LOAD.\nCheck your internet connection and make sure cdn.jsdelivr.net is not blocked, then reload the page. To run locally, use start-local.command (macOS) or start-local.bat (Windows); do not open index.html directly.`;
+        fatal.classList.remove('hidden');
+      }
+    }, true);
+  </script>
+  <script type="module" src="./js/game.js"></script>
+</body>
+</html>
